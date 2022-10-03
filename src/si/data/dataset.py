@@ -57,6 +57,24 @@ class Dataset:
         df.loc['max']=self.get_max()
         return df
 
+    def dropna(self):
+        # remove todas as samples com valor NaN
+
+        self.x = self.x[~np.isnan(self.x).any(axis=1)]
+
+        # atualizar o vetor y removendo as entradas associadas às amostras a remover
+        if self.has_labels():
+            self.y = self.y[~np.isnan(self.x).any(axis=1)]
+
+    def fillna(self, value):
+        # substitui todas os valores nulos por outro valor (argumento da função/método)
+
+        self.x = np.nan_to_num(self.x, nan=value)
+
+        # atualizar y
+        if self.has_labels():
+            self.y = np.nan_to_num(self.y, nan=value)
+
 # teste
 if __name__ == '__main__':
     x = np.array([[1,2,3] , [1,2,3]])
