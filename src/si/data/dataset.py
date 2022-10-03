@@ -6,9 +6,13 @@ import pandas as pd
 class Dataset:
     def __init__(self, x, y, features, label):
         self.x = x
+        # a matriz/tabela de features (variáveis independentes)
         self.y = y
+        # o vetor da variável dependente
         self.features = features
-        self.label = label 
+        # o vetor do nome das features
+        self.label = label
+        # o nome do vetor da variável dependente
     
     def shape(self):
         # dimensões do dataset
