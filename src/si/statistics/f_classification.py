@@ -4,6 +4,6 @@ from scipy.stats import f_oneway
 def f_classificiation (dataset: Dataset):
     classes = dataset.get_classes()
     # devolve as classes do dataset (valores possíveis de y)
-    for samples in classes:
-        f_oneway(samples)
-
+    groups = [dataset.x[dataset.y == samples] for samples in classes]
+    f, p = f_oneway(*groups)
+    return f, p
