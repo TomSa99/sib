@@ -5,7 +5,8 @@ from typing import Callable
 import numpy as np
 from sympy import centroid
 
-from sib.src.si.statistics.euclidean_distance import euclidean_distance
+from src.si.statistics.euclidean_distance import euclidean_distance
+from src.si.data.dataset import Dataset
 
 
 class KMeans:
@@ -21,7 +22,6 @@ class KMeans:
         # inicializa os centroids
         seeds = np.random.permutation(dataset.x.shape[0])[:self.k] # uma amostra em cada centroid
         self.centroids = dataset.x[seeds] # seeds = amostra 5 / amostra 10 / amostra 15...
-        pass
 
     def _get_closest_centroid(self, sample: np.ndarray):
         # calcula a distância entre as amostras e os centroids
@@ -31,29 +31,66 @@ class KMeans:
         return closest_centroids_index
 
 
-    def fit (self, k):
+    def fit (self, dataset: Dataset):
         # infere os centroids minimizando a distância entre as amostras e o centroid
-        new_labels = np.apply_along_axis(self._get_closest_centroid, axis = 1,arr = dataset.x)
-        
-        centroids = []
-        for i in range(self.k):
-            centroid = np.mean(dataset.x[new_labels == i], axis=0)
-            centroids.append(centroid)
-        self.centroids = np.array(centroids)
+        convergence = False
+        j = 0
+        labels = np.zeros(dataset.x.shape()[0])
+        while not convergence and j < self.max_iter:
 
+            # get closest centroids
+            new_labels = np.apply_along_axis(self._get_closest_centroid, axis = 1,arr = dataset.x)
+            
+            # compute new centroids
+            centroids = []
+            for i in range(self.k):
+                centroid = np.mean(dataset.x[new_labels == i], axis=0)
+                centroids.append(centroid)
+            self.centroids = np.array(centroids)
 
-        pass
+            # verifica se os centroids convergiram
+            convergence = np.any(labels != new_labels)
+
+            # atualiza os labels
+            labels = new_labels
+
+            # incrementa o contador
+            j += 1
+        self.labels = labels
+        return self
+
+    def _get_distances(self, sample: np.ndarray):
+        # calcula a distância entre as amostras e os centroids
+        return self.distance(sample, self.centroids)
 
     def predict(self, dataset: Dataset) -> np.ndarray:
         # infere qual dos centroids está mais perto da amostra
         return np.apply_along_axis(self._get_closest_centroid, axis = 1, arr = dataset.x)
-        pass
 
-    def transform(self,k):
+    def fit_predict(self, dataset: Dataset) -> np.ndarray:
+        # infere os centroids e retorna os labels
+        self.fit(dataset)
+        return self.predict(dataset)
+
+
+    def transform(self, dataset: Dataset) -> np.ndarray:
         # calcula as distâncias entre as amostras e os centroids
-        centroids_distance = np.apply_along_axis(self.)
-        pass
+        centroids_distance = np.apply_along_axis(self._get_distances, axis = 1, arr = dataset.x)
+        return centroids_distance
 
-    def predict(self, k):
-        # infere qual dos centroids está mais perto da amostra
-        pass
+    def fit_transform(self, dataset: Dataset) -> np.ndarray:
+        # infere os centroids e retorna as distâncias entre as amostras e os centroids
+        self.fit(dataset)
+        return self.transform(dataset)
+
+
+if __name__ == '__main__':
+    from si.data.dataset import Dataset
+    dataset_ = Dataset.from_random(100, 5)
+
+    k_ = 3
+    kmeans = KMeans(k_)
+    res = kmeans.fit_transform(dataset_)
+    predictions = kmeans.predict(dataset_)
+    print(res.shape)
+    print(predictions.shape)
