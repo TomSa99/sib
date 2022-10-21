@@ -3,10 +3,10 @@
 
 from typing import Callable
 import numpy as np
-from sympy import centroid
+# from sympy import centroid
 
-from src.si.statistics.euclidean_distance import euclidean_distance
-from src.si.data.dataset import Dataset
+from src_.si.statistics.euclidean_distance import euclidean_distance
+from src_.si.data.dataset import Dataset
 
 
 class KMeans:
