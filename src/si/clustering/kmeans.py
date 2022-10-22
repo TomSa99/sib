@@ -9,7 +9,7 @@ from src.si.statistics.euclidean_distance import euclidean_distance
 from src.si.data.dataset import Dataset
 
 
-class KMeans:
+class kmeans:
     def __init__(self, k: int, max_iter: int = 1000, distance: Callable = 'euclidean_distance'):
         self.k = k
         self.max_iter = max_iter
@@ -62,34 +62,21 @@ class KMeans:
         # calcula a distância entre as amostras e os centroids
         return self.distance(sample, self.centroids)
 
-    def predict(self, dataset: Dataset) -> np.ndarray:
-        # infere qual dos centroids está mais perto da amostra
-        return np.apply_along_axis(self._get_closest_centroid, axis=1, arr=dataset.x)
-
-    def fit_predict(self, dataset: Dataset) -> np.ndarray:
-        # infere os centroids e retorna os labels
-        self.fit(dataset)
-        return self.predict(dataset)
-
-    def transform(self, dataset: Dataset) -> np.ndarray:
+    def transform(self, dataset: Dataset):
         # calcula as distâncias entre as amostras e os centroids
         centroids_distance = np.apply_along_axis(self._get_distances, axis=1, arr=dataset.x)
         return centroids_distance
 
-    def fit_transform(self, dataset: Dataset) -> np.ndarray:
+    def fit_transform(self, dataset: Dataset):
         # infere os centroids e retorna as distâncias entre as amostras e os centroids
         self.fit(dataset)
         return self.transform(dataset)
 
+    def predict(self, dataset: Dataset):
+        # infere qual dos centroids está mais perto da amostra
+        return np.apply_along_axis(self._get_closest_centroid, axis=1, arr=dataset.x)
 
-if __name__ == '__main__':
-    from si.data.dataset import Dataset
-
-    dataset_ = Dataset.from_random(100, 5)
-
-    k_ = 3
-    kmeans = KMeans(k_)
-    res = kmeans.fit_transform(dataset_)
-    predictions = kmeans.predict(dataset_)
-    print(res.shape)
-    print(predictions.shape)
+    def fit_predict(self, dataset: Dataset):
+        # infere os centroids e retorna os labels
+        self.fit(dataset)
+        return self.predict(dataset)
