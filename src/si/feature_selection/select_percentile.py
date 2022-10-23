@@ -1,28 +1,29 @@
 from si.data.dataset import Dataset
 import numpy as np
 
+
 class SelectPercentile:
-    def __init__ (self,score_func, percentile):
+    def __init__(self, score_func, percentile):
         self.score_func = score_func
         self.percentile = percentile
         self.F = None
         self.p = None
-    
+
     def fit(self, dataset: Dataset):
         self.F, self.p = self.score_func(dataset)
         return self
-    
+
     def transform(self, dataset: Dataset):
         len_feats = len(dataset.features)
         percentile = int(len_feats * self.percentile)
         idx = np.argsort(self.F)[:percentile]
         features = np.array(dataset.features)[idx]
-        return Dataset(dataset.x[:,idx], dataset.y, features)
-
+        return Dataset(dataset.x[:, idx], dataset.y, features)
 
     def fit_transform(self, dataset: Dataset):
         self.fit(dataset)
         return self.transform(dataset)
+
 
 if __name__ == "__main__":
     a = SelectPercentile(0.75)
@@ -34,4 +35,4 @@ if __name__ == "__main__":
                       label="y")
     a = a.fit_transform(dataset)
     print(dataset.features)
-    print(a.features)  
+    print(a.features)
