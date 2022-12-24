@@ -1,10 +1,18 @@
+from typing import get_args, Literal
+
 import numpy as np
+import matplotlib.pyplot as plt
+
 from src.si.statistics.sigmoid_function import sigmoid_function
 from src.si.data.dataset import Dataset
+from src.si.metrics.accuracy import accuracy
+
+alpha_opt = Literal['static_alpha', 'half_alpha']
 
 
 class LogisticRegression:
-    def __init__(self, l2_penalty: float = 1, alpha: float = 0.001, max_iter: int = 1000):
+    def __init__(self, l2_penalty: float = 1, alpha: float = 0.001, max_iter: int = 2000,
+                 alpha_type: alpha_opt = 'static_alpha'):
         """
         Logistic Regression
 
@@ -16,22 +24,30 @@ class LogisticRegression:
             Learning rate
         :param max_iter: int
             Maximum number of iterations
+        :param alpha_type: alpha_opt
+            The gradient descent algorithm to use. There are two options: (1) 'static_alpha': where no alterations are
+            applied to the alpha; or (2) 'half_alpha' where the value of alpha is set to half everytime the cost function
+            value remains the same.
 
         Attributes
         ----------
-        theta:
+        theta: np.ndarray
             the model coefficients/parameters for the input variables (features)
-        theta_zero:
+        theta_zero: float
             the coefficient/parameter zero. Also known as intercept
+        cost_history: dict
+            the cost history of the model
         """
         # parameters
         self.l2_penalty = l2_penalty
         self.alpha = alpha
         self.max_iter = max_iter
+        self.alpha_type = alpha_type
 
         # attributes
-        self.theta = None
-        self.theta_zero = None
+        self.theta = None  # model coefficient
+        self.theta_zero = None  # f function of a linear model
+        self.cost_history = None  # history of the cost function
 
     def fit(self, dataset: Dataset) -> 'LogisticRegression':
         """
@@ -54,22 +70,44 @@ class LogisticRegression:
         self.theta = np.zeros(n)
         self.theta_zero = 0
 
+        # initialize the cost history dictionary
+        self.cost_history = {}
+
+        # asserts that the alpha_type is valid
+        opts = get_args(alpha_opt)
+        assert self.alpha_type in opts, f'alpha_type must be one of {opts}'
+
         # gradient descent
-        for _ in range(self.max_iter):
-            # calculate the predicted values
-            y_pred = sigmoid_function(np.dot(dataset.x, self.theta) + self.theta_zero)
+        for i in range(self.max_iter):
+            # predicted y
+            y_pred = np.dot(dataset.x, self.theta) + self.theta_zero
 
-            # calculate the gradient
-            gradient = np.dot(dataset.x.T, (y_pred - dataset.y)) / m
-            gradient_zero = np.sum(y_pred - dataset.y) / m
+            # computing and updating the gradient with the learning rate
+            gradient = (self.alpha * (1 / m)) * np.dot(y_pred - dataset.y, dataset.x)
 
-            # update the model parameters
-            self.theta -= self.alpha * (gradient + self.l2_penalty * self.theta)
-            self.theta_zero -= self.alpha * gradient_zero
+            # computing the penalty
+            penalization_term = self.alpha * (self.l2_penalty / m) * self.theta
+
+            # updating the model parameters
+            self.theta = self.theta - gradient - penalization_term
+            self.theta_zero = self.theta_zero - (self.alpha * (1 / m)) * np.sum(y_pred - dataset.y)
+
+            # compute the cost
+            self.cost_history[i] = self.cost(dataset)
+
+            # condition to stop the gradient descent if the cost is not changing
+            threshold = 0.0001
+
+            if _ > 1 and self.cost_history[i - 1] - self.cost_history[i] < threshold:
+                if self.alpha_type == 'half_alpha':
+                    self.alpha /= 2
+
+                else:
+                    break
 
         return self
 
-    def predict(self, dataset: Dataset) -> np.array:
+    def predict(self, dataset: Dataset) -> np.ndarray:
         """
         Predict the labels of the dataset
         Estimates the output (dependent) variable using the estimated thetas
@@ -84,14 +122,14 @@ class LogisticRegression:
         Returns
         -------
         y_pred: np.array
-            The predicted labels of the dataset
+            The accuracy of the model
         """
-        vals = sigmoid_function(np.dot(dataset.x, self.theta) + self.theta_zero)
+        preds = sigmoid_function(np.dot(dataset.x, self.theta) + self.theta_zero)
 
-        if vals >= 0.5: # 0.5 because is the half value of the sigmoid function (between 0 and 1)
-            return 1
-        else:
-            return 0
+        mask = preds >= 0.5
+        preds[mask] = 1
+        preds[~mask] = 0
+        return preds
 
     def score(self, dataset: Dataset) -> float:
         """
@@ -108,7 +146,7 @@ class LogisticRegression:
             The accuracy of the model
         """
         y_pred = self.predict(dataset)
-        return np.sum(y_pred == dataset.y) / len(dataset.y)
+        return accuracy(dataset.y, y_pred)
 
     def cost(self, dataset: Dataset) -> float:
         """
@@ -124,7 +162,17 @@ class LogisticRegression:
         cost: float
             The cost of the model
         """
-        m, _ = dataset.shape()
-        y_pred = sigmoid_function(np.dot(dataset.x, self.theta) + self.theta_zero)
-        cost = -1 / m * np.sum(dataset.y * np.log(y_pred) + (1 - dataset.y) * np.log(1 - y_pred))
+        predictions = sigmoid_function(np.dot(dataset.x, self.theta) + self.theta_zero)
+        cost = (-dataset.y * np.log(predictions)) - ((1 - dataset.y) * np.log(1 - predictions))
+        cost = np.sum(cost) / dataset.shape()[0]
+        cost = cost + (self.l2_penalty * np.sum(self.theta ** 2) / (2 * dataset.shape()[0]))
         return cost
+
+    def cost_plot(self):
+        """
+        Plots the cost history of the model
+        """
+        plt.plot(list(self.cost_history.keys()), list(self.cost_history.values()))
+        plt.xlabel('Iterations')
+        plt.ylabel('Cost')
+        plt.show()
