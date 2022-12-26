@@ -1,5 +1,7 @@
 from src.si.data.dataset import Dataset
-from intertools import product
+
+from itertools import product
+
 import numpy as np
 
 
@@ -31,7 +33,7 @@ class Kmer:
         self.k_mers = [''.join(k_mer) for k_mer in self.k_mers]
         return self.k_mers
 
-    def _get_sequence_k_mer_composition(self, sequence: str):
+    def _get_sequence_k_mer_composition(self, sequence: str) -> np.ndarray:
         # calculate the k-mer composition
         counts = {k_mer: 0 for k_mer in self.k_mers}
 
@@ -39,7 +41,10 @@ class Kmer:
             k_mer = sequence[i:i + self.k]
             counts[k_mer] += 1
 
-    def transform(self, dataset: Dataset):
+        # normalize the counts
+        return np.array([counts[k_mer] / len(sequence) for k_mer in self.k_mers])
+
+    def transform(self, dataset: Dataset) -> Dataset:
         """
         Transforms the data
 
@@ -52,3 +57,13 @@ class Kmer:
         sequence_k_mer_composition = np.array(sequence_k_mer_composition)
 
         return Dataset(x=sequence_k_mer_composition, y=dataset.y, features=self.k_mers, label=dataset.label)
+
+    def fit_transform(self, dataset: Dataset) -> Dataset:
+        """
+        Fits the model and transform the data
+
+        :param dataset: Dataset
+            Dataset object
+        """
+        self.fit(dataset)
+        return self.transform(dataset)
