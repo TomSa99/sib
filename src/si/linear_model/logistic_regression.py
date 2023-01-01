@@ -98,7 +98,7 @@ class LogisticRegression:
             # condition to stop the gradient descent if the cost is not changing
             threshold = 0.0001
 
-            if _ > 1 and self.cost_history[i - 1] - self.cost_history[i] < threshold:
+            if i > 1 and self.cost_history[i - 1] - self.cost_history[i] < threshold:
                 if self.alpha_type == 'half_alpha':
                     self.alpha /= 2
 

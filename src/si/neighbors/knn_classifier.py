@@ -2,9 +2,9 @@ from typing import Callable, Union
 
 import numpy as np
 
-from sib.src.si.data.dataset import Dataset
-from sib.src.si.metrics import accuracy
-from sib.src.si.statistics.euclidean_distance import euclidean_distance
+from src.si.data.dataset import Dataset
+from src.si.metrics import accuracy
+from src.si.statistics.euclidean_distance import euclidean_distance
 
 class KNNClassifier:
     """
@@ -90,7 +90,7 @@ class KNNClassifier:
         :return: np.ndarray
             Prediction of the models
         """
-        return np.apply_along_axis(self._get_closest_neighbors, 1, dataset.x)
+        return np.apply_along_axis(self._get_closest_neighbors, axis=1, arr=dataset.x)
 
     def score(self, dataset: Dataset) -> float:
         """
@@ -108,3 +108,28 @@ class KNNClassifier:
         """
         predictions = self.predict(dataset)
         return accuracy(dataset.y, predictions)
+
+if __name__ == '__main__':
+    # import dataset
+    from si.data.dataset import Dataset
+    from si.model_selection.split import train_test_split
+
+    # load and split the dataset
+    X = np.array([[0, 2, 0, 3],
+                  [0, 1, 4, 3],
+                  [0, 1, 1, 3]])
+    dataset_ = Dataset(X,
+                       y=np.array([0, 1, 0]),
+                       features=["f1", "f2", "f3", "f4"],
+                       label="y")
+    dataset_train, dataset_test = train_test_split(dataset_, test_size=0.2)
+
+    # initialize the KNN classifier
+    knn = KNNClassifier(k=3)
+
+    # fit the model to the train dataset
+    knn.fit(dataset_train)
+
+    # evaluate the model on the test dataset
+    score = knn.score(dataset_test)
+    print(f'The accuracy of the model is: {score}')

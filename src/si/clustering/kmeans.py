@@ -27,7 +27,7 @@ class KMeans:
     labels: np.ndarray
         Labels
     """
-    def __init__(self, k: int, max_iter: int = 1000, distance: Callable = 'euclidean_distance'):
+    def __init__(self, k: int, max_iter: int = 1000, distance: euclidean_distance = euclidean_distance):
         # parameters
         self.k = k
         self.max_iter = max_iter
@@ -46,8 +46,9 @@ class KMeans:
         """
         seeds = np.random.permutation(dataset.x.shape[0])[:self.k]  # sample in each centroid
         self.centroids = dataset.x[seeds]  # seeds = sample 5 / sample 10 / sample 15...
+        # print(self.centroids)
 
-    def _get_closest_centroid(self, sample: np.ndarray):
+    def _get_closest_centroid(self, sample: np.ndarray) -> np.ndarray:
         """
         Returns the closest centroid
 
@@ -80,7 +81,7 @@ class KMeans:
         # fitting the k-means
         convergence = False
         j = 0
-        labels = np.zeros(dataset.x.shape()[0])
+        labels = np.zeros(dataset.shape()[0])
         while not convergence and j < self.max_iter:
 
             # get closest centroids
@@ -168,3 +169,19 @@ class KMeans:
         """
         self.fit(dataset)
         return self.predict(dataset)
+
+if __name__ == "__main__":
+    X = np.array([[0, 2, 0, 3],
+                  [0, 1, 4, 3],
+                  [0, 1, 1, 3]])
+    a = KMeans(2, 10)
+    dataset = Dataset(X,
+                      y=np.array([0, 1, 0]),
+                      features=["f1", "f2", "f3", "f4"],
+                      label="y")
+    k = 3
+    kmeans = KMeans(k)
+    res = kmeans.fit_transform(dataset)
+    predictions = kmeans.predict(dataset)
+    print(res.shape)
+    print(predictions.shape)

@@ -86,13 +86,13 @@ def write_csv(filename, dataset, sep=',', features=False, label=False):
         df.to_csv(filename, sep=sep, index=False)
 
 
-"testar o código"
-if __name__ == '__main__':
-    # read_csv
-    dataset = read_csv('/Users/Utilizador/Desktop/SIB/notas.csv', sep=',', features=True, label=True)
-    print(dataset.summary())
-
-    # write_csv
-    write_csv('/Users/Utilizador/Desktop/SIB/notas2.csv', dataset, sep=',', features=True, label=True)
-
-read_csv('/Users/Utilizador/Desktop/SIB/notas.csv')
+# "testar o código"
+# if __name__ == '__main__':
+#     # read_csv
+#     dataset = read_csv('/Users/Utilizador/Desktop/SIB/notas.csv', sep=',', features=True, label=True)
+#     print(dataset.summary())
+#
+#     # write_csv
+#     write_csv('/Users/Utilizador/Desktop/SIB/notas2.csv', dataset, sep=',', features=True, label=True)
+#
+# read_csv('/Users/Utilizador/Desktop/SIB/notas.csv')

@@ -3,6 +3,8 @@ from re import X
 import numpy as np
 import pandas as pd
 
+from numpy import ndarray
+
 
 class Dataset:
     """
@@ -19,7 +21,7 @@ class Dataset:
     :param label: str
         The name of the dependent variable (label)
     """
-    def __init__(self, x, y, features, label):
+    def __init__(self, x: ndarray, y: ndarray = None, features: list = None, label: str = None):
         # the feature matrix/table (independent variables)
         self.x = x
         # the vector of the dependent variable (labels)
@@ -135,14 +137,14 @@ class Dataset:
             self.y = np.nan_to_num(self.y, nan=value)
 
 
-# teste
-if __name__ == '__main__':
-    x = np.array([[1, 2, 3], [1, 2, 3]])
-    y = np.array([1, 2])
-    features = ['A', 'B', 'C']
-    label = 'y'
-    dataset = Dataset(x, y, features, label)
-    print(dataset.shape())
-    print(dataset.has_label())
-    print(dataset.get_classes())
-    print(dataset.summary())
+# # teste
+# if __name__ == '__main__':
+#     x = np.array([[1, 2, 3], [1, 2, 3]])
+#     y = np.array([1, 2])
+#     features = ['A', 'B', 'C']
+#     label = 'y'
+#     dataset = Dataset(x, y, features, label)
+#     print(dataset.shape())
+#     print(dataset.has_label())
+#     print(dataset.get_classes())
+#     print(dataset.summary())

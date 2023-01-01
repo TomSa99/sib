@@ -1,3 +1,5 @@
+import numpy as np
+
 def sigmoid_function(x):
     """
     Sigmoid function
